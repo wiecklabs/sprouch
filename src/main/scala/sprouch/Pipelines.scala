@@ -91,7 +91,7 @@ private[sprouch] class Pipelines(config:Config) {
       }) ~>
       ((r:HttpRequest) => { docLogger.logRequest(r); r }) ~>
       sendReceive(conduit) ~>
-      ((r:HttpResponse) => { docLogger.logResponse(r); r })
+      ((r:HttpResponse) => { docLogger.logResponse(r); r }))
     }
     p.andThen(resp => resp.map(unmarshalEither[A]))
   }
