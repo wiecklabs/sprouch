@@ -1,12 +1,9 @@
 package sprouch
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import akka.dispatch.Future
+import scala.concurrent.Future
 import spray.json.JsonFormat
+import org.junit.runner.RunWith
 import spray.json.JsValue
 
 class CloudantSearch extends FunSuite with CouchSuiteHelpers {
