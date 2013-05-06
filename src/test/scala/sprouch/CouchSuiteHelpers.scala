@@ -2,10 +2,10 @@ package sprouch
 
 import org.scalatest.FunSuite
 import akka.actor.ActorSystem
-import akka.util.Duration
-import akka.dispatch.Await
-import akka.dispatch.Future
 import java.util.UUID
+import scala.concurrent.duration.Duration
+import scala.concurrent.Future
+import scala.concurrent.Await
 
 case class Test(foo:Int, bar:String)
 
@@ -17,10 +17,13 @@ trait CouchSuiteHelpers {
   implicit val testFormat = jsonFormat2(Test)
   
   implicit val actorSystem = ActorSystem("MySystem")
+  import actorSystem.dispatcher
+
   private val conf = Config(actorSystem, "kimstebel.cloudant.com", 80, Some("kimstebel" -> "lse72438"), false) 
   val c = new Couch(conf)
   val cSync = sprouch.synchronous.Couch(conf)
-  implicit val testDuration = Duration("60 seconds")
+  implicit val testDuration = Duration("30 seconds")
+  
   def await[A](f:Future[A]) = Await.result(f, testDuration)
   
   def assertGet[A](e:Either[_,A]):A = {
@@ -48,7 +51,6 @@ trait CouchSuiteHelpers {
     resf andThen { case _ => dbf.flatMap(_.delete()) }
     await(resf)
   }
-  
   
   def withNewDbSync[A](f:sprouch.synchronous.Database => A):A = {
   	val dbName = "tempdb" + UUID.randomUUID.toString.toLowerCase

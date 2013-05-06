@@ -1,7 +1,8 @@
 package sprouch
 
 import spray.json.RootJsonFormat
-import akka.dispatch.Future
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 import scala.annotation.implicitNotFound
 import spray.json.JsonFormat
 import spray.json.JsValue
@@ -19,7 +20,7 @@ package object dsl {
       limit:Option[Int] = None,
       skip:Option[Int] = None,
       groupLevel:Option[Int] = None,
-      stale:StaleOption = notStale)(implicit db:Future[Database], jsfk:JsonFormat[K], jsfv:JsonFormat[V]) = {
+      stale:StaleOption = notStale)(implicit db:Future[Database], jsfk:JsonFormat[K], jsfv:JsonFormat[V], ec:ExecutionContext) = {
     db.flatMap(_.queryView[K,V](viewDocName, viewName, flags, key, keys, startKey, endKey, startKeyDocId, endKeyDocId, limit, skip, groupLevel, stale))
   }
   implicit def dataToDslDoc[A:RootJsonFormat](data:A):DslNewDocument[A] = {
@@ -35,22 +36,28 @@ package object dsl {
   implicit def dslDoc[A:RootJsonFormat](doc:RevedDocument[A]):DslRevedDocument[A] = {
     new DslRevedDocument(doc.id, doc.rev, doc.data, doc.attachments)
   }
+  def get[A](id:String)
+      (implicit db:Future[Database],
+                rjf:RootJsonFormat[A],
+                executionContext:ExecutionContext):Future[RevedDocument[A]] = {
+    db.flatMap(_.getDoc[A](id))
+  }
   implicit def newToDslDoc[A:RootJsonFormat](doc:NewDocument[A]):DslNewDocument[A] = {
     new DslNewDocument(doc.id, doc.data, doc.attachments)
   }
-  def get[A](id:String)(implicit db:Future[Database], rjf:RootJsonFormat[A]):Future[RevedDocument[A]] = {
-    db.flatMap(_.getDoc[A](id))
-  }
-  def get[A](doc:RevedDocument[A])(implicit db:Future[Database], rjf:RootJsonFormat[A]):Future[RevedDocument[A]] = {
+  def get[A](doc:RevedDocument[A])
+      (implicit db:Future[Database],
+      		      rjf:RootJsonFormat[A],
+      		      executionContext:ExecutionContext):Future[RevedDocument[A]] = {
     db.flatMap(_.getDoc[A](doc))
   }
   class EnhancedFuture[A](f:Future[A]) {
-    def either = {
+    def either(implicit ec:ExecutionContext) = {
       f.map(Right(_)).recover {
         case e:Exception => Left(e)
       }
     }
-    def option = {
+    def option(implicit ec:ExecutionContext) = {
       f.map(Some(_)).recover {
         case e:Exception => None
       }

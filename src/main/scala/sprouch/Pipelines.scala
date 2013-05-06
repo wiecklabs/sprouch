@@ -1,7 +1,6 @@
 package sprouch
 
 import akka.actor._
-import akka.dispatch.Future
 import spray.can.client.HttpClient
 import spray.client.HttpConduit
 import HttpConduit._
@@ -14,8 +13,13 @@ import spray.json._
 import spray.util._
 import java.util.UUID
 import akka.event.Logging
-import sprouch.JsonProtocol.{ErrorResponseBody, ErrorResponse}
-import spray.io.{IOBridge, IOExtension}
+import akka.actor.Actor
+import akka.actor.Props
+import akka.event.Logging
+import sprouch.JsonProtocol.ErrorResponseBody
+import sprouch.JsonProtocol.ErrorResponse
+import scala.concurrent.Future
+import spray.io.IOExtension
 
 /**
  * Configuration data, default values should be valid for a default install of CouchDB.
@@ -37,6 +41,9 @@ case class Config(
 private[sprouch] class Pipelines(config:Config) {
   import config._
   
+  val as = config.actorSystem
+  import as.dispatcher
+	
   private val conduit = {
     val ioBridge = IOExtension(actorSystem).ioBridge()
     val httpClient = actorSystem.actorOf(Props(new HttpClient(ioBridge)))
@@ -72,19 +79,20 @@ private[sprouch] class Pipelines(config:Config) {
         }
       })
     }
-    addHeader("accept", "application/json") ~>
-    (etag match {
-      case Some(etag) => addHeader("If-None-Match", "\"" + etag + "\"") 
-      case None => (x:HttpRequest) => x
-    }) ~>
-    (userPass match {
-      case Some((u,p)) => addCredentials(BasicHttpCredentials(u, p))
-      case None => (x:HttpRequest) => x
-    }) ~>
-    ((r:HttpRequest) => { docLogger.logRequest(r); r }) ~>
-    sendReceive(conduit) ~>
-    ((r:HttpResponse) => { docLogger.logResponse(r); r }) ~>
-    unmarshalEither[A]
+    val p: HttpRequest => Future[HttpResponse] = {
+      (addHeader("accept", "application/json") ~>
+      (userPass match {
+        case Some((u,p)) => addCredentials(BasicHttpCredentials(u, p))
+        case None => (x:HttpRequest) => x
+      }) ~>
+      (etag match {
+        case Some(etag) => addHeader("If-None-Match", "\"" + etag + "\"") 
+        case None => (x:HttpRequest) => x
+      }) ~>
+      ((r:HttpRequest) => { docLogger.logRequest(r); r }) ~>
+      sendReceive(conduit) ~>
+      ((r:HttpResponse) => { docLogger.logResponse(r); r })
+    }
+    p.andThen(resp => resp.map(unmarshalEither[A]))
   }
-  
 }

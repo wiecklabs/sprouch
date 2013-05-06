@@ -1,10 +1,10 @@
 package sprouch.synchronous
 
-import akka.util.Duration
 import sprouch.Config
-import akka.dispatch.Future
-import akka.dispatch.Await
 import sprouch.JsonProtocol.OkResponse
+import scala.concurrent.duration.Duration
+import scala.concurrent.Future
+import scala.concurrent.Await
 
 /**
   * This is just a synchronous wrapper around sprouch.Couch.

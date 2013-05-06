@@ -4,16 +4,15 @@ import Keys._
 object ApplicationBuild extends Build {
 
   val dependencies = Seq(
-    "org.scalatest" %% "scalatest" % "1.8" % "test",
-    "io.spray" % "spray-can" % "1.0-M7",
-    "io.spray" % "spray-client" % "1.0-M7",
-    "io.spray" %  "spray-json_2.9.2" % "1.2.3",
-    "com.typesafe.akka" % "akka-actor" % "2.0.4",
+    "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
+    "io.spray" % "spray-can" % "1.1-M7",
+    "io.spray" % "spray-client" % "1.1-M7",
+    "io.spray" %%  "spray-json" % "1.2.3",
+    "com.typesafe.akka" %% "akka-actor" % "2.1.0",
     "com.novocode" % "junit-interface" % "0.10-M1" % "test"
   )
 
-  val main = Project(id = "sprouch-cloudant", base = new File("."), settings = Project.defaultSettings ++ Seq(
-    (scalaVersion := "2.9.2"),
+  val main = Project(id = "sprouch", base = new File("."), settings = Project.defaultSettings ++ Seq(
     (libraryDependencies ++= dependencies),
     (resolvers ++= Seq(
         "spray repo" at "http://repo.spray.io",
@@ -24,6 +23,8 @@ object ApplicationBuild extends Build {
         "gh-pages",
         new File("/home/k/workspaces/sprouch-pages/repository/")
     ))),
+    (scalaVersion := "2.10.1"),
+    (scalacOptions += "-language:_"),
     (version := "0.5.11")
   ))
 

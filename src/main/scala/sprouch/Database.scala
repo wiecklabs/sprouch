@@ -8,7 +8,7 @@ import spray.http.HttpMethods.HEAD
 import spray.client.HttpConduit
 import HttpConduit.{Post, Delete, Get, Put}
 import spray.httpx.SprayJsonSupport._
-import akka.dispatch.Future
+import scala.concurrent.Future
 import spray.json.RootJsonFormat
 import spray.httpx.RequestBuilding.RequestBuilder
 import spray.http.HttpRequest
@@ -25,13 +25,14 @@ import spray.json.JsValue
   */
 class Database private[sprouch](val name:String, pipelines:Pipelines) extends UriBuilder {
   import pipelines._
+  import as.dispatcher
   
   private def dbUri:String = dbUri(name)
   private def docUri(doc:Document[_]):String = docUri(doc.id)
-  private def docUri(id:String) = path(name, id)
-  private def docUriRev(doc:RevedDocument[_]) = docUri(doc) + "?rev=" + doc.rev
+  private def docUri(id:String) = path(name, id) + "?w=3"
+  private def docUriRev(doc:RevedDocument[_]) = docUri(doc) + "&rev=" + doc.rev
   private def attachmentUriRev(doc:RevedDocument[_], aid:String):String =
-    attachmentUri(doc, aid) + "?rev=" + doc.rev
+    attachmentUri(doc, aid) + "&rev=" + doc.rev
   private def attachmentUri(doc:Document[_], aid:String) = docUri(doc) + sep + encode(aid)
   private def viewsUri(views:Document[_]) = path(name, "_design", views.id)
   private def keyValue[A](key:String)(value:A)(implicit aFormat:JsonFormat[A]) = key + "=" + encode(aFormat.write(value).toString)

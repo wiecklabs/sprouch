@@ -6,11 +6,12 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import sprouch.dsl._
-import akka.dispatch.Future
+import scala.concurrent.Future
 
 class DslBulk extends FunSuite with CouchSuiteHelpers {
   
   import JsonProtocol._
+  import actorSystem.dispatcher
   
   test("create docs in bulk with dsl") {
     withNewDbFuture(implicit dbf => {
