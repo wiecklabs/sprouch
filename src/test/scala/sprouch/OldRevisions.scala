@@ -12,6 +12,7 @@ class OldRevisions extends FunSuite with CouchSuiteHelpers {
   import actorSystem.dispatcher
   
   test("get old revisions of a document") {
+    pending
     withNewDb(db => {
       val data = Test(0, "")
       for {

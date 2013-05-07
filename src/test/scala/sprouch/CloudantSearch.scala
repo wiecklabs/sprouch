@@ -10,6 +10,7 @@ class CloudantSearch extends FunSuite with CouchSuiteHelpers {
   import JsonProtocol._
   
   test("lucene based search") {
+    pending
     implicit val dispatcher = (actorSystem.dispatcher)
         
     withNewDb("db")(db => {

@@ -33,7 +33,9 @@ class Dsl extends FunSuite with CouchSuiteHelpers {
       }
     })
   }
+
   test("attachments with dsl") {
+    pending
     withNewDbFuture(implicit dbf => {
       val data = Test(0, "")
       val attachmentData = Array[Byte](1,2,3,4)
@@ -49,5 +51,4 @@ class Dsl extends FunSuite with CouchSuiteHelpers {
       }
     })
   }
-  
 }

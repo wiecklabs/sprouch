@@ -32,6 +32,7 @@ class SynchronousDsl extends FunSuite with CouchSuiteHelpers {
     })
   }
   test("attachments with dsl") {
+    pending
     withNewDbSync(implicit db => {
       val data = Test(0, "")
       val attachmentData = Array[Byte](1,2,3,4)
